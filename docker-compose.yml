@@ -1,0 +1,44 @@
+version: '3.5'
+services:
+  api:
+    container_name: api.reminder.com
+    image: reminder-api
+    build:
+      context: /Users/yadavdip/dipeshfort/reminder-api
+    environment:
+      - DATABASE_URL=postgres://reminder@db.reminder.com:5432/reminders
+      - PORT=5001
+    ports:
+     - "5001:5001"
+    networks:
+     - reminder-net
+  web:
+    container_name: web.reminder.com
+    image: reminder-web
+    build:
+      context: /Users/yadavdip/dipeshfort/reminder-web
+      args:
+        - SERVICE_REMINDER_API=http://localhost:5001/reminders
+    environment:
+      - PORT=5000
+    ports:
+     - "5000:5000"
+    networks:
+     - reminder-net
+  postgres:
+    image: postgres:9.6
+    container_name: db.reminder.com
+    ports: 
+      - 5432:5432
+    networks: 
+     - reminder-net
+    volumes:
+      - "~/.postgres/dockervolume:/var/lib/postgresql/data"
+networks: 
+  reminder-net:
+    name: reminder-net
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+       - subnet: 10.1.0.0/24
